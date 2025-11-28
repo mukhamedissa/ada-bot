@@ -51,6 +51,7 @@ class AudioConfig:
     ENABLED = False
     SAMPLE_RATE = 16000
     CHANNELS = 1
+    DEVICE_INDEX = 0
 
 
 class SensorConfig:
@@ -85,4 +86,4 @@ class RobotConfig:
     SENSOR = SensorConfig
     NETWORK = NetworkConfig
     
-    ENABLED_MODULES = ['display', 'network']
+    ENABLED_MODULES = ['display', 'network', 'audio']

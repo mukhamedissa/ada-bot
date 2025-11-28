@@ -6,6 +6,7 @@ from config import RobotConfig
 from core.robot_controller import RobotController
 from modules.display.display_module import DisplayModule
 from modules.network.network_module import NetworkModule
+from modules.audio.audio_module import AudioModule
 
 load_dotenv()
 
@@ -48,6 +49,9 @@ def main():
     
     display_module = DisplayModule(RobotConfig.DISPLAY)
     controller.register_module(display_module)
+
+    audio_module = AudioModule(RobotConfig.AUDIO)
+    controller.register_module(audio_module)
 
     if 'network' in RobotConfig.ENABLED_MODULES:
         network_module = NetworkModule(RobotConfig.NETWORK)
