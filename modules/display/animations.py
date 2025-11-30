@@ -7,7 +7,6 @@ class AnimationType(Enum):
     NONE = "none"
     BLINK = "blink"
     SMILE = "smile"
-    HEART = "heart"
     SHAKE = "shake"
     NOD = "nod"
 

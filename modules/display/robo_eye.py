@@ -1,17 +1,16 @@
 import pygame
+import time
 from typing import Tuple
 from modules.display.animations import AnimationType, AnimationState
-from utils.helpers import lerp, ease_in_out, draw_heart
-
+from utils.helpers import lerp, ease_in_out
 
 class RoboEye:
     
     BLINK_DURATION = 0.15
     SMILE_DURATION = 0.7
+    SMILE_DELAY_DURATION = 1.0
     SMILE_HEIGHT_FACTOR = 0.6
     SMILE_TOP_RADIUS_FACTOR = 0.8
-    HEART_DURATION = 1.0
-    HEART_ANIMATION_PHASE = 0.3
     
     def __init__(self, center_x: float, center_y: float, width: float, height: float, config):
         self.config = config
@@ -34,13 +33,11 @@ class RoboEye:
         self.animations = {
             AnimationType.BLINK: AnimationState(),
             AnimationType.SMILE: AnimationState(),
-            AnimationType.HEART: AnimationState(),
         }
 
-        self.SMILE_DELAY_DURATION = 1 
-        self.smile_delay_start_time = None
-        
-        self.heart_scale = 0.0
+        self.smile_waiting = False
+        self.smile_easing_out = False
+        self.smile_wait_start = 0.0
     
     def _reset_border_radii(self):
         self.border_top_left = self.original_border_radius
@@ -56,10 +53,6 @@ class RoboEye:
         elif anim_type == AnimationType.SMILE:
             if not self._is_any_animation_active():
                 self.animations[AnimationType.SMILE].start(self.SMILE_DURATION)
-        
-        elif anim_type == AnimationType.HEART:
-            self._stop_all_animations()
-            self.animations[AnimationType.HEART].start(self.HEART_DURATION)
     
     def _is_any_animation_active(self) -> bool:
         return any(anim.is_active for anim in self.animations.values())
@@ -76,34 +69,17 @@ class RoboEye:
         self.current_x = lerp(self.current_x, self.target_x, self.config.EYE_MOVE_SPEED)
         self.current_y = lerp(self.current_y, self.target_y, self.config.EYE_MOVE_SPEED)
         
-        if self.animations[AnimationType.HEART].is_active:
-            self._update_heart_animation()
-            return
-        
-        self.current_height = self.height
-        self._reset_border_radii()
-        
         if self.animations[AnimationType.BLINK].is_active:
             self._update_blink_animation()
         
         if self.animations[AnimationType.SMILE].is_active:
             self._update_smile_animation()
+
+        if not self._is_any_animation_active() and not self.smile_waiting and not self.smile_easing_out:
+            self.current_height = self.height
+            self._reset_border_radii()
         
         self._update_perspective()
-    
-    def _update_heart_animation(self):
-        anim = self.animations[AnimationType.HEART]
-        progress = anim.get_progress()
-        
-        if progress < self.HEART_ANIMATION_PHASE:
-            phase_progress = progress / self.HEART_ANIMATION_PHASE
-            self.heart_scale = ease_in_out(phase_progress)
-        else:
-            self.heart_scale = 1.0
-        
-        if anim.is_finished():
-            anim.stop()
-            self.heart_scale = 0.0
     
     def _update_blink_animation(self):
         anim = self.animations[AnimationType.BLINK]
@@ -119,6 +95,38 @@ class RoboEye:
     
     def _update_smile_animation(self):
         anim = self.animations[AnimationType.SMILE]
+
+        if self.smile_waiting:
+            if time.time() - self.smile_wait_start >= self.SMILE_DELAY_DURATION:
+                self.smile_waiting = False
+                self.smile_easing_out = True 
+            else: 
+                target_height = self.height * self.SMILE_HEIGHT_FACTOR
+                target_top_radius = target_height * self.SMILE_TOP_RADIUS_FACTOR
+                target_bottom_radius = self.original_border_radius * 0.5
+                self.current_height = target_height
+                self.border_bottom_left = self.border_bottom_right = target_bottom_radius
+                self.border_top_left = self.border_top_right = target_top_radius
+                return
+        
+        if self.smile_easing_out:
+            elapsed_out = time.time() - self.smile_wait_start - self.SMILE_DELAY_DURATION
+            phase_duration = 1.0 / 3.0
+            t = ease_in_out(min(elapsed_out / (phase_duration * anim.duration), 1.0))
+            
+            target_height = self.height * self.SMILE_HEIGHT_FACTOR
+            target_top_radius = target_height * self.SMILE_TOP_RADIUS_FACTOR
+            target_bottom_radius = self.original_border_radius * 0.5
+            
+            self.current_height = lerp(target_height, self.height, t)
+            self.border_bottom_left = self.border_bottom_right = lerp(target_bottom_radius, self.original_border_radius, t)
+            self.border_top_left = self.border_top_right = lerp(target_top_radius, self.original_border_radius, t)
+            
+            if t >= 1.0:
+                self.smile_easing_out = False
+                anim.stop()
+            return
+
         progress = anim.get_progress()
         
         target_height = self.height * self.SMILE_HEIGHT_FACTOR
@@ -142,7 +150,11 @@ class RoboEye:
             self.current_height = target_height
             self.border_bottom_left = self.border_bottom_right = target_bottom_radius
             self.border_top_left = self.border_top_right = target_top_radius
-        
+
+            if not self.smile_waiting:
+                self.smile_waiting = True
+                self.smile_wait_start = time.time()
+            return
         else:
             phase_progress = (progress - (1.0 - phase_duration)) / phase_duration
             t = ease_in_out(phase_progress)
@@ -164,12 +176,6 @@ class RoboEye:
         self.current_width = self.width - abs(normalized_offset) * self.config.PERSPECTIVE_SHIFT
     
     def draw(self, surface: pygame.Surface):
-        if self.animations[AnimationType.HEART].is_active and self.heart_scale > 0:
-            heart_size = self.width * 0.9 * self.heart_scale
-            draw_heart(surface, self.config.HEART_COLOR, self.center_x, 
-                      self.center_y, heart_size)
-            return
-        
         draw_x = self.current_x + (self.width - self.current_width) / 2
         draw_y = self.current_y + (self.height - self.current_height) / 2
         

@@ -14,7 +14,7 @@ class RoboEyesController:
     
     NOD_DURATION = 0.5
     NOD_CYCLES = 2
-    NOD_AMPLITUDE = 35
+    NOD_AMPLITUDE = 80
     
     LOOK_DIRECTIONS = [
         "center", "left", "right", "up", "down",
@@ -55,8 +55,7 @@ class RoboEyesController:
     def is_special_animation_active(self) -> bool:
         return (self.shake_state.is_active or
                 self.nod_state.is_active or
-                self.left_eye.animations[AnimationType.SMILE].is_active or
-                self.left_eye.animations[AnimationType.HEART].is_active)
+                self.left_eye.animations[AnimationType.SMILE].is_active)
     
     def trigger_smile(self):
         if not self.is_special_animation_active():
@@ -70,11 +69,6 @@ class RoboEyesController:
     def trigger_nod(self):
         if not self.is_special_animation_active():
             self.nod_state.start(self.NOD_DURATION)
-    
-    def trigger_heart_eyes(self):
-        if not (self.shake_state.is_active or self.nod_state.is_active):
-            self.left_eye.start_animation(AnimationType.HEART)
-            self.right_eye.start_animation(AnimationType.HEART)
     
     def trigger_blink(self):
         self.left_eye.start_animation(AnimationType.BLINK)

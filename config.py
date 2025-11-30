@@ -17,25 +17,21 @@ class DisplayConfig:
     EYE_GAP = 30
     EYE_COLOR = (255, 255, 255)
     
-    MAX_OFFSET_X = 20
-    MAX_OFFSET_Y = 15
+    MAX_OFFSET_X = 40
+    MAX_OFFSET_Y = 30
     EYE_MOVE_SPEED = 0.2
     
     SHADOW_LAYERS = 0
     SHADOW_SPREAD = 8
     PERSPECTIVE_SHIFT = 15
     
-    HEART_COLOR = (255, 105, 180)
-    
     BLINK_DURATION = 0.15
     SMILE_DURATION = 0.7
-    HEART_DURATION = 1.0
     SHAKE_DURATION = 0.8
     NOD_DURATION = 0.5
     
     ANIMATION_CYCLE = [
-        "blink", "look", "smile", "shake", "nod",
-        "blink", "look", "nod", "shake", "smile"
+        "blink", "look"
     ]
     ANIMATION_INTERVAL = (2, 4)
 
@@ -47,11 +43,8 @@ class CameraConfig:
     FPS = 30
 
 
-class AudioConfig:
+class VoiceInputConfig:
     ENABLED = False
-    SAMPLE_RATE = 16000
-    CHANNELS = 1
-    DEVICE_INDEX = 0
 
 
 class SensorConfig:
@@ -82,8 +75,8 @@ class NetworkConfig:
 class RobotConfig:
     DISPLAY = DisplayConfig
     CAMERA = CameraConfig
-    AUDIO = AudioConfig
+    VOICE_INPUT = VoiceInputConfig
     SENSOR = SensorConfig
     NETWORK = NetworkConfig
     
-    ENABLED_MODULES = ['display', 'network', 'audio']
+    ENABLED_MODULES = ['display', 'network', 'voice_input']

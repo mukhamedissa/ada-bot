@@ -57,21 +57,18 @@ class NetworkModule(BaseModule):
             tag = self.config.VALORANT_TAG
             api_key = self.config.VALORANT_API_KEY
 
-            # Launch in background thread
             self._mmr_future = self.executor.submit(
                 self.fetch_valorant_mmr, region, platform, username, tag, api_key
             )
             self._last_mmr_update = now
 
-        # Check if background fetch completed
         if self._mmr_future is not None and self._mmr_future.done():
             result = self._mmr_future.result()
             if result:
-                # Parse and handle result in main thread
                 parsed = self.parse_valorant_mmr_data(result)
                 self.handle_valorant_mmr(parsed)
-                self._mmr_result_cache = parsed  # Optional: cache for quick access elsewhere
-            self._mmr_future = None  # Allow next fetch in future
+                self._mmr_result_cache = parsed
+            self._mmr_future = None
     
     
     def request(self, method: str, url: str, **kwargs) -> Optional[Dict]:

@@ -31,6 +31,8 @@ class EventType(Enum):
     MODULE_READY = auto()
     MODULE_ERROR = auto()
 
+    COMMAND_RECOGNIZED = auto()
+
 
 @dataclass
 class Event:

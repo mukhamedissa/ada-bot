@@ -80,6 +80,7 @@ class DisplayModule(BaseModule):
             self.event_manager.subscribe(EventType.FACE_DETECTED, self._on_face_detected)
             self.event_manager.subscribe(EventType.DISPLAY_IMAGE, self._on_display_image)
             self.event_manager.subscribe(EventType.DISPLAY_VALORANT_INFO, self._on_display_valorant_info)
+            self.event_manager.subscribe(EventType.COMMAND_RECOGNIZED,self._on_command_recognized)
     
     def _on_emotion_event(self, event: Event):
         emotion = event.data.get('emotion')
@@ -87,8 +88,6 @@ class DisplayModule(BaseModule):
         
         if emotion == 'happy':
             self.eyes_controller.trigger_smile()
-        elif emotion == 'love':
-            self.eyes_controller.trigger_heart_eyes()
         elif emotion == 'surprise':
             self.eyes_controller.trigger_shake()
     
@@ -102,8 +101,6 @@ class DisplayModule(BaseModule):
             self.eyes_controller.trigger_shake()
         elif animation == 'nod':
             self.eyes_controller.trigger_nod()
-        elif animation == 'heart':
-            self.eyes_controller.trigger_heart_eyes()
         elif animation == 'blink':
             self.eyes_controller.trigger_blink()
     
@@ -140,7 +137,20 @@ class DisplayModule(BaseModule):
         self.display_active_start_time = time.time()
         self.display_duration = event.data.get('duration', 0)
         self.display_valorant_info = True
-    
+
+    def _on_command_recognized(self, event):
+        command_data = event.data
+        
+        if command_data['command'] == 'can_you_hear_me':
+            self.eyes_controller.trigger_nod()
+        elif command_data['command'] == 'say_yes':
+            self.eyes_controller.trigger_nod()
+        elif command_data['command'] == 'say_no':
+            self.eyes_controller.trigger_shake()
+        elif command_data['command'] == 'smile':
+            self.eyes_controller.trigger_smile()
+
+
     def update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -175,8 +185,7 @@ class DisplayModule(BaseModule):
             pygame.K_q: lambda: self.event_manager.emit(EventType.SYSTEM_SHUTDOWN, source=self.get_name()),
             pygame.K_s: self.eyes_controller.trigger_smile,
             pygame.K_a: self.eyes_controller.trigger_shake,
-            pygame.K_y: self.eyes_controller.trigger_nod,
-            pygame.K_h: self.eyes_controller.trigger_heart_eyes,
+            pygame.K_y: self.eyes_controller.trigger_nod
         }
         
         action = key_actions.get(key)
