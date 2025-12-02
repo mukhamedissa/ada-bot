@@ -3,6 +3,7 @@ import random
 import math
 from modules.display.robo_eye import RoboEye
 from modules.display.animations import AnimationType, AnimationState
+from modules.audio.buzzer_sound import BuzzerSound
 from utils.helpers import ease_in_out
 
 
@@ -51,24 +52,30 @@ class RoboEyesController:
         self.animation_queue = config.ANIMATION_CYCLE.copy()
         self.current_animation_index = 0
         self.next_animation_time = time.time() + random.uniform(*config.ANIMATION_INTERVAL)
+
+        self.buzzer = BuzzerSound()
     
     def is_special_animation_active(self) -> bool:
         return (self.shake_state.is_active or
                 self.nod_state.is_active or
-                self.left_eye.animations[AnimationType.SMILE].is_active)
+                self.left_eye.animations[AnimationType.SMILE].is_active or
+                self.buzzer.is_playing)
     
     def trigger_smile(self):
         if not self.is_special_animation_active():
             self.left_eye.start_animation(AnimationType.SMILE)
             self.right_eye.start_animation(AnimationType.SMILE)
+            self.buzzer.play_animation_sound('smile')
     
     def trigger_shake(self):
         if not self.is_special_animation_active():
             self.shake_state.start(self.SHAKE_DURATION)
+            self.buzzer.play_animation_sound('shake')
     
     def trigger_nod(self):
         if not self.is_special_animation_active():
             self.nod_state.start(self.NOD_DURATION)
+            self.buzzer.play_animation_sound('nod')
     
     def trigger_blink(self):
         self.left_eye.start_animation(AnimationType.BLINK)

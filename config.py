@@ -53,7 +53,7 @@ class SensorConfig:
 
 
 class NetworkConfig:
-    ENABLED = True
+    ENABLED = False
     
     TIMEOUT = 10
     MAX_RETRIES = 3
@@ -79,4 +79,4 @@ class RobotConfig:
     SENSOR = SensorConfig
     NETWORK = NetworkConfig
     
-    ENABLED_MODULES = ['display', 'network', 'voice_input']
+    ENABLED_MODULES = ['display', 'voice_input']

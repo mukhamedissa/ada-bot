@@ -6,6 +6,7 @@ from modules.base_module import BaseModule
 from modules.display.eyes_controller import RoboEyesController
 from modules.display.renderers.valorant_info_renderer import ValorantInfoRenderer
 from core.event_manager import EventType, Event
+from modules.audio.buzzer_sound import BuzzerSound
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,8 @@ class DisplayModule(BaseModule):
 
         self.current_renderer_key = None
         self.current_renderer_data = None
+
+        self.buzzer = BuzzerSound()
 
     def get_name(self) -> str:
         return "display"
@@ -149,6 +152,9 @@ class DisplayModule(BaseModule):
             self.eyes_controller.trigger_shake()
         elif command_data['command'] == 'smile':
             self.eyes_controller.trigger_smile()
+        elif command_data['command'] == 'respond_to_name':
+            self.eyes_controller.set_look_direction("center")
+            self.buzzer.play_animation_sound('respond')
 
 
     def update(self):

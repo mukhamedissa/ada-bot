@@ -92,6 +92,21 @@ class VoiceInputModule(BaseModule):
     def _register_commands(self):
         @self.command_dispatcher.register(
             patterns=[
+                r"эйда",
+                r"эй да",
+                r"аида"
+            ],
+            command_name="respond_to_name",
+            description="Откликнуться на имя"
+        )
+        def cmd_ada():
+            logger.info("Command: Ada")
+            return {
+                'action': 'emotion',
+                'name': 'smile'
+            }
+        @self.command_dispatcher.register(
+            patterns=[
                 r"привет",
                 r"здравствуй(?:те)?",
                 r"добр(?:ый день|ое утро|ый вечер)",
